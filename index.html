@@ -51,7 +51,7 @@ p{margin:0 0 10px;max-width:70ch}
 .plate-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px dashed var(--line)}
 .specs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 .spec{padding:12px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
-.spec b{display:block;font-family:var(--display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15}
+.spec b{display:block;font-family:var(--display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15;overflow-wrap:anywhere}
 .spec span{font-size:12px;color:var(--ink2)}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:16px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
@@ -230,6 +230,11 @@ figure.fig figcaption b{color:var(--ink);font-weight:600}
    <p class="note acc" style="margin-top:8px">Your car's mechatronic unit has already been replaced, which removes the biggest DQ200 risk. Clutch wear is still something to watch.</p>
   </div>
   <div class="card">
+   <h3>The data plate</h3>
+   <p>The sticker in the engine bay is the car's birth certificate: <b>WVWZZZ1KZAM657640</b>, type <b>1KM</b>, approval <b>e1*2001/116*0328</b>, and the engine letters <b>CAXA</b> — so the engine code is confirmed from the car itself, not just the register.</p>
+   <p>It also carries the weights: 1 970 kg laden, 3 290 kg with a trailer, and 1 020 / 1 000 kg per axle. Photograph it and keep the photo on your phone — parts shops ask for it, and it settles any question about which variant you have.</p>
+  </div>
+  <div class="card">
    <h3>Watch first on this car</h3>
    <ul>
     <li><b>Timing chain rattle</b> for 2–5 seconds on a cold start</li>
@@ -393,6 +398,8 @@ figure.fig figcaption b{color:var(--ink);font-weight:600}
  <h2>Log book</h2>
  <p class="lede">Every service, repair, inspection and fuel note in one place, synced wherever you open this page. Next-due items are worked out from your latest entries.</p>
  <div class="due" id="dueGrid"></div>
+ <h3 class="sub" style="font-size:19px">Fuel</h3>
+ <div class="due" id="fuelGrid"></div>
  <div class="card" style="margin-top:16px">
   <h3 style="margin-bottom:10px">Add entry</h3>
   <form class="form" id="logForm">
@@ -405,6 +412,8 @@ figure.fig figcaption b{color:var(--ink);font-weight:600}
     <option value="coolant">Coolant</option><option value="tyres">Tyre change</option><option value="fuel">Fuel</option><option value="other">Other</option>
    </select></label>
    <label>Cost (€)<input type="number" id="f-cost" inputmode="decimal" min="0" step="0.01"></label>
+   <label id="f-litres-wrap" hidden>Litres<input type="number" id="f-litres" inputmode="decimal" min="0" step="0.01"></label>
+   <label id="f-full-wrap" hidden style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="f-full" style="width:auto"> Filled to full</label>
    <label class="wide">What was done<input type="text" id="f-title" required placeholder="e.g. Oil 5W-30 VW 504 00, Mann filter"></label>
    <label class="wide">Workshop / notes<textarea id="f-notes" rows="2" placeholder="Where, parts used, anything noticed"></textarea></label>
    <div class="wide" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn" type="submit" id="f-save">Save entry</button><span class="status" id="logStatus"></span></div>
@@ -853,9 +862,10 @@ const VEHICLE_DEFAULT={
  tyres:"195/65 R15", rims:"6,5J x 15",
  length:"4 631", width:"1 781", height:"1 524",
  mass:"1 426", maxMass:"1 970", roof:"75",
+ axle1:"1 020", axle2:"1 000", combi:"3 290", typ:"1KM", approval:"e1*2001/116*0328",
  owner:"Ahmed, Ishtiak (from 6.6.2026)",
  inspectionFrom:"2026-05-19", inspectionDue:"2027-05-19"};
-const VFIELDS=[["reg","Registration"],["vin","VIN"],["model","Model"],["year","First registered"],["engine","Engine"],["gearbox","Gearbox"],["fuel","Fuel"],["tyres","Tyre size"],["rims","Rim size"],["length","Length (mm)"],["width","Width (mm)"],["height","Height (mm)"],["mass","Unladen mass (kg)"],["maxMass","Max laden mass (kg)"],["roof","Roof load (kg)"],["owner","Owner"],["inspectionFrom","Inspection window opens"],["inspectionDue","Inspection due by"]];
+const VFIELDS=[["reg","Registration"],["vin","VIN"],["model","Model"],["year","First registered"],["engine","Engine"],["gearbox","Gearbox"],["fuel","Fuel"],["tyres","Tyre size"],["rims","Rim size"],["length","Length (mm)"],["width","Width (mm)"],["height","Height (mm)"],["mass","Unladen mass (kg)"],["maxMass","Max laden mass (kg)"],["axle1","Front axle max (kg)"],["axle2","Rear axle max (kg)"],["combi","Car + trailer max (kg)"],["roof","Roof load (kg)"],["typ","Type (plate)"],["approval","Type approval"],["owner","Owner"],["inspectionFrom","Inspection window opens"],["inspectionDue","Inspection due by"]];
 const PURCHASE=[["3 800 €","Purchase price · no extra fees"],["213 000 km","Odometer at purchase"],["June 2026","Bought on Huutokaupat.com"],["May 2027","Inspection valid until"]];
 const CONDITION=[
 ["Roadworthiness inspection","ok","Valid until May 2027 — the longest runway of any car considered"],
@@ -940,12 +950,26 @@ function renderLog(){
   if(v.d){const due=new Date(last.date);due.setDate(due.getDate()+v.d);const days=Math.round((due-today)/864e5);parts.push(days<0?`${-days} days overdue`:`due ${due.toLocaleDateString("fi-FI")}`);if(days<0)st="over";else if(days<45&&st!=="over")st="soon";}
   const c={ok:"c-grn",soon:"c-amb",over:"c-red"}[st],l={ok:"OK",soon:"Due soon",over:"Overdue"}[st];
   return `<div class="dueitem"><b>${v.n}</b><span class="chip ${c} st">${l}</span><span class="mono" style="color:var(--ink2)">${parts.join(" · ")}</span><span style="font-size:12.5px;color:var(--ink2)">Last: ${fmtD(last.date)} at ${nf(last.km)} km</span></div>`;}).join("");
+ const fuels=entries.filter(e=>e.type==="fuel").sort((a,b)=>(+a.km||0)-(+b.km||0));
+ const litres=fuels.reduce((s,e)=>s+(+e.litres||0),0), spend=fuels.reduce((s,e)=>s+(+e.cost||0),0);
+ let cons=null, consNote="Needs two fills marked “filled to full”";
+ const fullFills=fuels.filter(e=>e.full&&+e.litres>0);
+ if(fullFills.length>=2){const a1=fullFills[fullFills.length-2],b1=fullFills[fullFills.length-1];const d=(+b1.km)-(+a1.km);
+  if(d>0){cons=(+b1.litres)/d*100;consNote=`${nf(d)} km between the last two full tanks`;}}
+ const tiles=[];
+ if(fuels.length){tiles.push(["Fuel logged",`${litres.toFixed(2).replace(".",",")} l`,`${fuels.length} fill${fuels.length>1?"s":""} · €${spend.toFixed(2)}`]);
+  const avg=litres?spend/litres:0; if(avg)tiles.push(["Average price",`${avg.toFixed(3).replace(".",",")} €/l`,"Across your logged fills"]);
+  tiles.push(["Consumption",cons?`${cons.toFixed(1).replace(".",",")} l/100 km`:"—",consNote]);
+  const km0=213000,kmNow=Math.max(0,...entries.map(e=>+e.km||0));
+  if(kmNow>km0)tiles.push(["Driven since purchase",`${nf(kmNow-km0)} km`,`Odometer ${nf(kmNow)} km`]);}
+ $("#fuelGrid").innerHTML=tiles.length?tiles.map(t=>`<div class="dueitem"><span class="mono" style="color:var(--ink2)">${t[0]}</span><b style="font-family:var(--display);font-size:24px">${t[1]}</b><span style="font-size:12.5px;color:var(--ink2)">${t[2]}</span></div>`).join(""):'<div class="dueitem"><b>No fills logged yet</b><span style="font-size:12.5px;color:var(--ink2)">Add one with type “Fuel”, and tick “filled to full” so the page can work out l/100 km</span></div>';
  const total=entries.reduce((s,e)=>s+(+e.cost||0),0);
  $("#logCount").textContent=entries.length?`${entries.length} entries · €${total.toLocaleString("fi-FI",{maximumFractionDigits:2})} total`:"";
  const typeName=v=>$("#f-type").querySelector(`option[value="${v}"]`)?.textContent||v;
- $("#logList").innerHTML=sorted.length?sorted.map(e=>`<div class="entry"><span class="d">${fmtD(e.date)}</span><div><span class="chip c-acc">${esc(typeName(e.type))}</span> <b>${esc(e.title)}</b><div class="km">${nf(e.km)} km${e.cost?" · €"+esc(e.cost):""}</div>${e.notes?`<div style="color:var(--ink2);font-size:13.5px">${esc(e.notes)}</div>`:""}</div>${db?`<button class="x" data-del="${esc(e.id)}">Delete</button>`:""}</div>`).join(""):`<p class="empty" style="padding:14px">${db?"No entries yet. Add your first service above. The mechatronic replacement is a good one to start with.":"Loading log book…"}</p>`;
+ $("#logList").innerHTML=sorted.length?sorted.map(e=>`<div class="entry"><span class="d">${fmtD(e.date)}</span><div><span class="chip c-acc">${esc(typeName(e.type))}</span> <b>${esc(e.title)}</b><div class="km">${e.km?nf(e.km)+" km":"odometer not recorded"}${e.cost?" · €"+esc(e.cost):""}${+e.litres?" · "+String(e.litres).replace(".",",")+" l":""}${e.full?" · full tank":""}</div>${e.notes?`<div style="color:var(--ink2);font-size:13.5px">${esc(e.notes)}</div>`:""}</div>${db?`<button class="x" data-del="${esc(e.id)}">Delete</button>`:""}</div>`).join(""):`<p class="empty" style="padding:14px">${db?"No entries yet. Add your first service above. The mechatronic replacement is a good one to start with.":"Loading log book…"}</p>`;
 }
 $("#f-date").value=new Date().toISOString().slice(0,10);
+$("#f-type").addEventListener("change",()=>{const f=$("#f-type").value==="fuel";$("#f-litres-wrap").hidden=!f;$("#f-full-wrap").hidden=!f;});
 renderLog();
 (async()=>{
  db=await (window.claude?.use?.("db")??Promise.resolve(null)).catch(()=>null);
@@ -956,9 +980,9 @@ renderLog();
  renderLog();
 })();
 $("#logForm").addEventListener("submit",async e=>{e.preventDefault();if(!db)return;
- const rec={date:$("#f-date").value,km:Math.round(+$("#f-km").value),type:$("#f-type").value,title:$("#f-title").value.trim(),notes:$("#f-notes").value.trim(),cost:$("#f-cost").value?(+$("#f-cost").value).toFixed(2):"",createdAt:new Date().toISOString()};
+ const rec={date:$("#f-date").value,km:Math.round(+$("#f-km").value),type:$("#f-type").value,title:$("#f-title").value.trim(),notes:$("#f-notes").value.trim(),cost:$("#f-cost").value?(+$("#f-cost").value).toFixed(2):"",litres:$("#f-type").value==="fuel"&&$("#f-litres").value?+$("#f-litres").value:0,full:$("#f-type").value==="fuel"&&$("#f-full").checked,createdAt:new Date().toISOString()};
  $("#f-save").disabled=true;$("#logStatus").textContent="Saving…";
- try{await db.collection("log").add(rec);$("#logStatus").textContent="Saved.";$("#f-title").value="";$("#f-notes").value="";$("#f-cost").value="";}
+ try{await db.collection("log").add(rec);$("#logStatus").textContent="Saved.";$("#f-title").value="";$("#f-notes").value="";$("#f-cost").value="";$("#f-litres").value="";$("#f-full").checked=false;}
  catch(err){$("#logStatus").textContent=err.code==="quota_exceeded"?"The log is full. Delete old entries to add more.":"Couldn't save ("+(err.code||"error")+"). Try again.";}
  $("#f-save").disabled=false;});
 $("#logList").addEventListener("click",async e=>{const b=e.target.closest("[data-del]");if(!b||!db)return;if(!confirm("Delete this entry?"))return;
@@ -992,11 +1016,19 @@ $("#switchFig").innerHTML=`<figure class="fig"><div class="figscroll">${DIAG.lig
 
 // vehicle details + settings
 function renderVehicle(){
- const rows=[["Registration",vehicle.reg],["VIN",vehicle.vin],["Tyres",vehicle.tyres+" · rims "+vehicle.rims],
+ const num=s=>parseInt(String(s||"").replace(/\D/g,""),10)||0;
+ const payload=num(vehicle.maxMass)-num(vehicle.mass), trailer=num(vehicle.combi)-num(vehicle.maxMass);
+ const rows=[["Registration",vehicle.reg],["VIN",vehicle.vin],["Type / approval",(vehicle.typ||"")+" · "+(vehicle.approval||"")],
+  ["Tyres",vehicle.tyres+" · rims "+vehicle.rims],
   ["Length × width × height",`${vehicle.length} × ${vehicle.width} × ${vehicle.height} mm`],
-  ["Unladen mass",vehicle.mass+" kg"],["Max laden mass",vehicle.maxMass+" kg"],["Roof load",vehicle.roof+" kg"],
+  ["Unladen mass",vehicle.mass+" kg"],["Max laden mass",vehicle.maxMass+" kg"],
+  ["Payload (people + luggage)",payload>0?payload.toLocaleString("fi-FI")+" kg":"—"],
+  ["Axle max, front / rear",`${vehicle.axle1} / ${vehicle.axle2} kg`],
+  ["Car + trailer max",vehicle.combi+" kg"],
+  ["Trailer headroom when fully laden",trailer>0?trailer.toLocaleString("fi-FI")+" kg":"—"],
+  ["Roof load",vehicle.roof+" kg"],
   ["Inspection due by",fmtFi(vehicle.inspectionDue)]];
- $("#regPlate").innerHTML=`<div class="plate-head"><h3>Registration &amp; dimensions</h3><span class="mono" style="color:var(--ink2)">${esc(vehicle.reg)} · ${esc(vehicle.year)}</span></div><div class="specs">`+
+ $("#regPlate").innerHTML=`<div class="plate-head"><h3>Registration, plate &amp; weights</h3><span class="mono" style="color:var(--ink2)">${esc(vehicle.reg)} · ${esc(vehicle.year)}</span></div><div class="specs">`+
   rows.map(r=>`<div class="spec srch"><b style="font-size:19px">${esc(r[1])}</b><span>${r[0]}</span></div>`).join("")+"</div>";
  $("#vForm").innerHTML=VFIELDS.map(([k,l])=>`<label>${l}<input id="v-${k}" type="${k.startsWith("inspection")?"date":"text"}" value="${esc(vehicle[k]||"")}"></label>`).join("");
 }
