@@ -103,6 +103,8 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .sub{margin-top:26px}
 .hidden-by-search{display:none!important}
 .subnav{margin:14px 0 8px}
+.spotgrp{margin-top:8px}.spotgrp b{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:500}
+.spots{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}.spots span{font-family:var(--mono);font-size:12px;min-width:34px;text-align:center;padding:3px 8px;border:1px solid var(--line);border-radius:4px;background:var(--panel2)}.spots.tmp span{border-style:dashed}
 .subnav button{font-size:13.5px;padding:6px 13px}
 .body details.item{background:var(--panel2)}
 body.searching .skip-search,body.searching .subnav{display:none}
@@ -251,11 +253,51 @@ figure.fig figcaption b{color:var(--ink);font-weight:600}
   <p class="note" style="margin-top:8px">Known issues (second key, rust, tyre pressure light) are tracked under <b>Actions</b>.</p>
   <div class="grid2">
    <div class="card"><h3>Storage &amp; documents</h3><ul>
-    <li>Garage parking space at the Espoo property, invoiced through the housing company's property manager</li>
+    <li>Garage parking at the Espoo property: rules, spot map and contract terms are in the <b>Parking</b> sub-menu</li>
     <li>Google Drive folder for vehicle documents and parking records</li>
     <li>Keep the inspection report, service book and the mechatronic replacement invoice together. They're worth real money at resale</li>
    </ul></div>
    <div class="card"><h3>Why this one</h3><ul id="whyList"></ul></div>
+  </div>
+ </div>
+
+ <div class="ss" data-s="park" data-label="Parking" hidden>
+  <p class="lede">The garage parking contract at Kirkkojärventie 10, Espoo. It matters for the car as well as the parking: the garage rules ban repairs, tyre changes, washing and idling.</p>
+  <div class="grid2">
+   <div class="card srch"><h3>Where you may park</h3><ul>
+    <li><b>Any vacant AB spot</b> in the garage. Ehta Management confirmed: "The parking hall is a free parking hall. You just choose a vacant spot." There are no numbered or reserved places</li>
+    <li><b>Not</b> the C or D spots. They belong to Lumo residents</li>
+    <li><b>Not</b> outside the garage. Use public parking around the property instead</li>
+    <li>Show the permit <b>LUPA_24</b> on the dashboard so it is visible from outside the car</li>
+   </ul></div>
+   <div class="card srch"><h3>Garage rules</h3><ul>
+    <li>No car repairs, tyre changes, washing or idling in the garage</li>
+    <li>No storing car accessories in the parking hall (fire safety)</li>
+    <li>Subject to the garage rules of order (<i>Autohallin järjestyssäännöt</i>)</li>
+   </ul>
+   <p class="note" style="margin-top:10px">What that means here: do DIY jobs, wheel swaps and washes somewhere else, and keep the winter kit and spare wheels out of the garage. Start the car and drive off. Don't let it idle to warm up.</p></div>
+  </div>
+  <div class="plate srch" style="margin-top:14px"><div class="plate-head"><h3>Contract</h3><span class="mono" style="color:var(--ink2)">Autopaikan vuokrasopimus</span></div><div class="specs">
+   <div class="spec"><b style="font-size:19px">50 € / month</b><span>Due on the 5th. <span id="rentNext"></span></span></div>
+   <div class="spec"><b style="font-size:19px">AB permit</b><span>Vapaapysäköintilupa LUPA_24</span></div>
+   <div class="spec"><b style="font-size:15px">As Oy Kaupunginpuiston Intro</b><span>Landlord · Kirkkojärventie 10</span></div>
+   <div class="spec"><b style="font-size:19px">16 Jul 2026</b><span>Start. Valid until further notice</span></div>
+   <div class="spec"><b style="font-size:19px">1 month</b><span>Notice period</span></div>
+   <div class="spec"><b style="font-size:19px">None</b><span>Deposit</span></div>
+  </div></div>
+  <div class="grid2">
+   <div class="card srch"><h3>Terms to remember</h3><ul>
+    <li>The permit is personal. It can't be transferred to another tenant or a new owner</li>
+    <li>Two unpaid rent reminders and the permit is revoked entirely</li>
+    <li>Late payment carries interest under Finnish law</li>
+   </ul></div>
+   <div class="card srch"><h3>Spot map</h3>
+    <p style="font-size:14px;margin-bottom:8px">Numbered spots on the garage plan. Any vacant AB spot is allowed.</p>
+    <div class="spotgrp"><b>AB row along the bottom · 17</b><div class="spots"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span></div></div>
+    <div class="spotgrp"><b>AB right, next to Section E · 4</b><div class="spots"><span>90</span><span>91</span><span>92</span><span>93</span></div></div>
+    <div class="spotgrp"><b>AB far right, below the C column · 4</b><div class="spots"><span>112</span><span>113</span><span>114</span><span>115</span></div></div>
+    <div class="spotgrp"><b>LAB temporary, left of the main row · 5</b><div class="spots tmp"><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span></div></div>
+   </div>
   </div>
  </div>
 
@@ -288,7 +330,7 @@ figure.fig figcaption b{color:var(--ink);font-weight:600}
 
 <section class="pane" id="parts" hidden>
  <h2>Parts &amp; repairs</h2>
- <p class="lede">One card per system: how it works, what goes wrong, which fault codes point to it, and the repair or replacement steps. <span class="chip c-grn">DIY</span> needs basic tools. <span class="chip c-amb">Advanced</span> needs special tools or a scanner. <span class="chip c-red">Workshop</span> needs a lift, special tools or coding. A cheap OBD2 reader turns a warning light into a code. VCDS or OBDeleven also read the VW modules, including the gearbox.</p>
+ <p class="lede">One card per system: how it works, what goes wrong, which fault codes point to it, and the repair or replacement steps. <span class="chip c-grn">DIY</span> needs basic tools. <span class="chip c-amb">Advanced</span> needs special tools or a scanner. <span class="chip c-red">Workshop</span> needs a lift, special tools or coding. A cheap OBD2 reader turns a warning light into a code. VCDS or OBDeleven also read the VW modules, including the gearbox. Your garage rules ban repairs, tyre changes and washing in the parking hall, so do DIY jobs elsewhere (see Car › Parking).</p>
  <div class="filters" id="sysFilter"></div>
  <div class="list" id="sysList"></div>
 </section>
@@ -669,7 +711,7 @@ warn:"Many VW cars need the new battery registered with a scanner (VCDS, OBDelev
 {t:"Wheel & tyre change",lvl:"DIY",when:"Twice a year (winter and summer)",
 tools:["Jack, wheel brace, torque wrench","Locking wheel bolt key (usually in the spare-wheel well)"],
 steps:["Loosen the bolts half a turn on the ground","Jack at the marked points on the sill","Swap the wheels, tighten the bolts in a star pattern","Lower the car and torque to 120 Nm","Re-torque after 50–100 km","Set the tyre pressures (door-pillar sticker), then reset the tyre pressure warning"],
-warn:"Mark the wheels' positions (FL/FR/RL/RR) when storing them so you can rotate them next season."},
+warn:"Mark the wheels' positions (FL/FR/RL/RR) when storing them so you can rotate them next season. The parking garage bans tyre changes and storing car accessories, so do this elsewhere."},
 {t:"Tyre pressure warning reset",lvl:"DIY",when:"After tyre changes or pressure changes",
 tools:["None"],
 steps:["Set all four pressures cold","Ignition on, car stationary. Press and hold the SET button until you hear a beep. On 2010 and later cars it is usually in the glovebox next to the passenger airbag switch, on earlier ones in the centre console near the gear lever","Drive normally. The system learns the new baseline"],
@@ -1100,4 +1142,6 @@ $("#actList").addEventListener("click",async e=>{const b=e.target.closest("[data
  const cur=actions.find(a=>a.id===b.dataset.act);if(!cur)return;
  try{await db.doc("actions/"+cur.id).update({done:!cur.done,doneAt:cur.done?"":new Date().toISOString()});}
  catch(err){$("#actStatus").textContent="Couldn't update ("+(err.code||"error")+").";}});
-</script>
+
+// next parking rent date (due on the 5th)
+(()=>{const n=new Date(),d=new Date(n.getFullYear(),n.getMonth(),5);if(n.getDate()>5)d.setMonth(d.getMonth()+1);const el=$("#rentNext");if(el)el.textContent="Next due "+d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear();})();</script>
